@@ -1,31 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>ANUWH MD - WhatsApp Bot Linking</title>
-<style>
-body { font-family: Arial; background: #000; color: #fff; text-align: center; padding: 50px; }
-h1 { color: #0f0; }
-button, input { padding: 10px 20px; font-size: 16px; margin: 10px; border-radius: 8px; border: none; }
-button { cursor: pointer; background: #222; color: #0f0; }
-button:hover { background: #0f0; color: #000; }
-input { width: 200px; }
-</style>
+  <meta charset="UTF-8" />
+  <title>ANUWH MD - WhatsApp Bot Linking</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #000; color: #fff; text-align: center; padding: 50px; }
+    h1 { color: #0f0; }
+    button { padding: 12px 24px; font-size: 18px; margin: 10px; border: none; border-radius: 8px; cursor: pointer; background: #222; color: #0f0; }
+    button:hover { background: #0f0; color: #000; }
+  </style>
 </head>
 <body>
-<h1>ANUWH MD Bot</h1>
-<p>POWERED BY ANUGA OFFICIAL</p>
+  <h1>ANUWH MD Bot</h1>
+  <p>POWERED BY ANUGA OFFICIAL</p>
+  <p>Choose a linking method:</p>
 
-<h2>Link via QR</h2>
-<a href="/qr"><button>📲 Link via QR</button></a>
-
-<h2>Link via Pair Code</h2>
-<form method="POST" action="/pair">
-  <input type="text" name="pairCode" placeholder="Enter 8-digit code or leave blank">
-  <button type="submit">🔗 Pair</button>
-</form>
-
-<h2>Pairings Count</h2>
-<a href="/pairings"><button>📊 Show Total Pairings</button></a>
+  <a href="/qr"><button>📲 Link via QR</button></a>
+  <a href="/pair"><button>🔢 Link via Pairing Code</button></a>
 </body>
 </html>

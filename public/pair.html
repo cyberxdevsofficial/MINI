@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ANUWH MD - Number Pairing</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #000;
+    color: #0f0;
+    text-align: center;
+    padding: 50px;
+}
+input, button {
+    padding: 10px;
+    font-size: 18px;
+    margin: 10px;
+    border-radius: 6px;
+}
+button {
+    cursor: pointer;
+    background: #0f0;
+    color: #000;
+    border: none;
+}
+#result {
+    margin-top: 20px;
+    font-size: 20px;
+}
+</style>
+</head>
+<body>
+<h1>ANUWH MD Bot Pairing</h1>
+<p>Enter your name to generate your pairing code:</p>
+<input type="text" id="username" placeholder="Your Name" />
+<button onclick="generateCode()">Generate Code</button>
+<p id="result"></p>
+
+<script>
+async function generateCode() {
+    const username = document.getElementById('username').value.trim();
+    if (!username) return alert('Please enter your name');
+
+    const response = await fetch('/pair', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+    });
+
+    const data = await response.json();
+    if (data.success) {
+        document.getElementById('result').innerText = `✅ Your Pairing Code: ${data.code}`;
+    } else {
+        document.getElementById('result').innerText = '❌ Failed to generate code';
+    }
+}
+</script>
+</body>
+</html>

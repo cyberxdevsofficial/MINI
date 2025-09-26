@@ -9,22 +9,22 @@ const PORT = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Serve frontend files
+// Serve static files
 app.use(express.static('public'));
 
-// Homepage
+// Home route
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'pair.html'));
 });
 
-// Generate new pairing code
+// Generate pairing code
 app.post('/pair', (req, res) => {
   const userName = req.body.username || 'Anonymous';
   const code = generatePairCode(userName);
   res.json({ success: true, code });
 });
 
-// Route to see all pairings (optional, for admin/debug)
+// Get all pairings (admin/debug)
 app.get('/pairings', (req, res) => {
   const all = getAllPairings();
   res.json({ total: all.length, pairings: all });

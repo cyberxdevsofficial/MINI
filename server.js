@@ -1,37 +1,36 @@
-const express = require("express");
-const path = require("path");
-const fs = require("fs");
+const express = require('express');
+const path = require('path');
+const { generatePairCode, getAllPairings } = require('./pair');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files (frontend)
-app.use(express.static(path.join(__dirname, "public")));
+// Parse POST data
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-// Simple JSON storage for pairings
-const pairingsFile = path.join(__dirname, "pairings.json");
-if (!fs.existsSync(pairingsFile)) {
-  fs.writeFileSync(pairingsFile, JSON.stringify([]));
-}
+// Serve frontend files
+app.use(express.static('public'));
 
-// Routes
-app.get("/qr", (req, res) => {
-  res.send("<h1>Scan your QR here (to be implemented)</h1>");
+// Homepage
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get("/pair", (req, res) => {
-  const code = Math.floor(10000000 + Math.random() * 90000000).toString();
-  let data = JSON.parse(fs.readFileSync(pairingsFile));
-  data.push({ code, time: new Date() });
-  fs.writeFileSync(pairingsFile, JSON.stringify(data, null, 2));
-  res.send(`<h1>Your Pairing Code: ${code}</h1>`);
+// Generate new pairing code
+app.post('/pair', (req, res) => {
+  const userName = req.body.username || 'Anonymous';
+  const code = generatePairCode(userName);
+  res.json({ success: true, code });
 });
 
-// Homepage handled by public/index.html
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+// Route to see all pairings (optional, for admin/debug)
+app.get('/pairings', (req, res) => {
+  const all = getAllPairings();
+  res.json({ total: all.length, pairings: all });
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });

@@ -5,10 +5,15 @@ const ytdl = require('ytdl-core');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 const BOT_NAME = 'ANUWH MD';
 const FOOTER = 'POWERED BY ANUGA OFFICIAL';
 const PREFIX = '.';
+const PAIR_FILE = './pairings.json';
+
+// Ensure pairings file exists
+if (!fs.existsSync(PAIR_FILE)) fs.writeFileSync(PAIR_FILE, JSON.stringify([]));
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('session');
@@ -34,7 +39,7 @@ async function startBot() {
   };
 
   const sendAPKFile = async (from) => {
-    const apkPath = path.join(__dirname, 'sample.apk'); // Place your APK here
+    const apkPath = path.join(__dirname, 'sample.apk');
     if (!fs.existsSync(apkPath)) return await reply(from, '❌ APK not found');
     const apkBuffer = fs.readFileSync(apkPath);
     await sock.sendMessage(from, {
@@ -55,6 +60,18 @@ async function startBot() {
     } catch {
       return null;
     }
+  };
+
+  const sendOwnerVcf = async (from) => {
+    const vcfData = `BEGIN:VCARD
+VERSION:3.0
+FN:Anuga Senithu De Silva
+TEL;TYPE=CELL:+94710695082
+ADR;TYPE=home:;;Sri Lanka
+END:VCARD`;
+    await sock.sendMessage(from, {
+      contacts: { displayName: 'Anuga Senithu', contacts: [{ vcard: vcfData }] }
+    });
   };
 
   sock.ev.on('messages.upsert', async ({ messages }) => {
@@ -84,9 +101,7 @@ async function startBot() {
           const info = await ytdl.getInfo(videoUrl);
           const link = ytdl.filterFormats(info.formats, 'audioandvideo')[0].url;
           await reply(from, `🎬 Video URL: ${link}`);
-        } catch {
-          await reply(from, '❌ Failed to fetch video.');
-        }
+        } catch { await reply(from, '❌ Failed to fetch video.'); }
         break;
 
       case 'song':
@@ -95,14 +110,88 @@ async function startBot() {
           const info = await ytdl.getInfo(songUrl);
           const link = ytdl.filterFormats(info.formats, 'audioonly')[0].url;
           await reply(from, `🎵 Song URL: ${link}`);
-        } catch {
-          await reply(from, '❌ Failed to fetch song.');
-        }
+        } catch { await reply(from, '❌ Failed to fetch song.'); }
         break;
 
       case 'apk':
         await sendAPKFile(from);
         break;
+
+      case 'movie':
+        const name = commandBody.split(' ').slice(1).join(' ');
+        const info = await getMovieInfo(name);
+        if (info) await reply(from, info);
+        else await reply(from, '❌ Movie not found');
+        break;
+
+      case 'menu':
+        const menuMessage = `
+*${BOT_NAME}*
+
+Commands:
+📌 .ping - Test bot speed
+📌 .boom - Boom messages
+📌 .video [url] - Download video
+📌 .song [url] - Download song
+📌 .apk - Get sample APK
+📌 .movie [name] - Movie info
+📌 .owner - Show owner contact
+📌 .chr [link],[reaction] - React to channel message
+📌 .menu - Show this menu
+        `;
+        await sock.sendMessage(from, {
+          image: { url: 'https://i.postimg.cc/nX6ZH38b/botlogo.png' },
+          caption: menuMessage
+        });
+        break;
+
+      case 'owner':
+        await sendOwnerVcf(from);
+        await reply(from, `Owner Info:\nName: Anuga Senithu De Silva\nNumber: +94710695082\nCountry: Sri Lanka 🇱🇰`);
+        break;
+
+      case 'chr': {
+        const q = msg.message?.conversation || 
+                  msg.message?.extendedTextMessage?.text || 
+                  msg.message?.imageMessage?.caption || 
+                  msg.message?.videoMessage?.caption || '';
+
+        if (!q.includes(',')) {
+            await sock.sendMessage(from, { 
+                text: "❌ Please provide input like this:\n*.chr <link>,<reaction>*" 
+            });
+            break;
+        }
+
+        const link = q.split(",")[0].trim();
+        const react = q.split(",")[1].trim();
+
+        try {
+            const channelId = link.split('/')[4];
+            const messageId = link.split('/')[5];
+
+            // Placeholder: adjust according to your bot API
+            // const res = await sock.newsletterMetadata("invite", channelId);
+            // const response = await sock.newsletterReactMessage(res.id, messageId, react);
+
+            await sock.sendMessage(from, { text: `✅ Reacted with "${react}" successfully on ${link}!` });
+
+        } catch (e) {
+            console.log(e);
+            await sock.sendMessage(from, { text: `❌ Error: ${e.message}` });
+        }
+        break;
+      }
+
+      default:
+        await reply(from, '❌ Unknown command');
+    }
+  });
+
+  return sock;
+}
+
+module.exports = startBot;        break;
 
       case 'movie':
         const name = commandBody.split(' ').slice(1).join(' ');
